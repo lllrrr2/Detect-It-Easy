@@ -1,0 +1,12 @@
+// Detect It Easy: detection rule file
+// Author: BJNFNE <bjnfne@web.de>
+// This Script supports following formats: COL
+// Used by Grand Theft Auto San Andreas
+
+init("format", "Collision Data");
+
+function detect() {
+    bDetected = Binary.compare("'COL'");
+
+    return result();
+}

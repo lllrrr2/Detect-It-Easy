@@ -1,0 +1,14 @@
+// Detect It Easy: detection rule file
+// Author: BJNFNE <bjnfne@web.de>
+// This Script supports following formats: BCSAR
+
+init("archive", "CTR Sound Archive");
+
+function detect() {
+    if (Binary.compare("'CSAR'")) {
+        sVersion = "BCSAR";
+        bDetected = true;
+    }
+
+    return result();
+}

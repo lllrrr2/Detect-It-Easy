@@ -1,0 +1,15 @@
+// Detect It Easy: detection rule file
+// Author: BJNFNE <bjnfne@web.de>
+// This Script supports following formats: CKP
+// Used by Adiboo & Paziral's Secret
+
+init("archive", "CKP");
+
+function detect() {
+    if (Binary.compare("'.CKP'")) {
+        sVersion = "CKP";
+        bDetected = true;
+    }
+
+    return result();
+}
