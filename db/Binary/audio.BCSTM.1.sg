@@ -1,0 +1,14 @@
+// Detect It Easy: detection rule file
+// Author: BJNFNE <bjnfne@web.de>
+// This Script supports following formats: BCSTM
+
+init("audio", "BCSTM Audio Stream");
+
+function detect() {
+    if (Binary.compare("'CSTM'")) {
+        sVersion = "BCSTM";
+        bDetected = true;
+    }
+
+    return result();
+}
