@@ -1,11 +1,9 @@
 // Detect It Easy: detection rule file
-// https://github.com/horsicq/Detect-It-Easy
 // Author: Kaens (TG@kaens)
 // Mostly from the all-encompassing https://github.com/temisu/ancient
 //Lots of these formats have very shaky signatures, and some won't even have decompression errors...
 
 init("archive", "");
-includeScript("read");
 /* beautify ignore:start */
 debug = 0;
 

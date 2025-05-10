@@ -2,16 +2,14 @@
 // Author: BJNFNE <bjnfne@web.de>
 // This Script supports following formats: STK/ITK (DEV7 only)
 
+// https://wiki.scummvm.org/index.php?title=Gob/DEV7_Information#STK21_File_Structure
 init("archive", "STK");
 
 function detect() {
-    // Check if the string "'STK2.1'" is present in the archive
-    if (Binary.compare("'STK2.1'")) { // Use contains instead of compare
-        sVersion = "STK21"; // Set version if detected
-        bDetected = true;   // Mark as detected
-    } else {
-        bDetected = false;  // Mark as not detected if the string is not found
+    if (Binary.compare("'STK2.1'")) {
+        sVersion = "STK21";
+        bDetected = true;
     }
 
-    return result(); // Return the result of the detection
+    return result();
 }
