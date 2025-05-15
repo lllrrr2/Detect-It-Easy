@@ -4,12 +4,10 @@
 init("image", "comment");
 
 function detect() {
-    if (Binary.isJpeg()) {
-        sOptions = Binary.getJpegComment();
+    sOptions = Jpeg.getComment();
 
-        if (sOptions != "") {
-            bDetected = true;
-        }
+    if (sOptions != "") {
+        bDetected = true;
     }
 
     return result();

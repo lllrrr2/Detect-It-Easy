@@ -4,12 +4,10 @@
 init("camera", "");
 
 function detect() {
-    if (Binary.isJpeg()) {
-        sName = Binary.getJpegExifCameraName();
+    sName = Jpeg.getExifCameraName();
 
-        if (sName != "") {
-            bDetected = true;
-        }
+    if (sName != "") {
+        bDetected = true;
     }
 
     return result();

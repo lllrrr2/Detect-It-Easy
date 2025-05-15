@@ -4,10 +4,8 @@
 init("image", "DQT");
 
 function detect() {
-    if (Binary.isJpeg()) {
-        bDetected = true;
-        sOptions = Binary.getJpegDqtMD5();
-    }
+    bDetected = true;
+    sOptions = Jpeg.getDqtMD5();
 
     return result();
 }

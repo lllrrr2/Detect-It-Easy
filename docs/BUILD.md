@@ -6,8 +6,11 @@ cd DIE-engine
 sudo docker build . -t horsicq:diec
 ```
 
-# How to build on Linux based on Debian
+# How to build on Linux based on Debian 
 
+* You can also watch tutorial on [YouTube](https://www.youtube.com/watch?v=hODcbA_1Tns)
+* For further Information you can look at [fr0stb1rd blogpost](https://fr0stb1rd.gitlab.io/posts/building-and-running-detect-it-easy-on-kali-linux-complete-tutorial/).
+  
 #### Install packages:
 
 ```bash
@@ -133,4 +136,30 @@ cd build
 make -j4
 # To use it as a command, uncomment the following line:
 # sudo make install -j4
+```
+
+# How to build with MinGW/MSYS2
+
+Install MSYS2: https://www.msys2.org/
+
+#### Clone this repo recursively:
+
+```bash
+git clone --recursive https://github.com/horsicq/DIE-engine.git
+cd DIE-engine
+```
+
+### Install libaries
+
+```bash
+pacman -S mingw-w64-ucrt-x86_64-gcc
+pacman -S mingw-w64-x86_64-qt5-tools
+```
+
+#### Build
+
+```bash
+chmod a+x configure
+./configure
+make -j4
 ```
