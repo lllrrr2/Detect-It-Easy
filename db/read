@@ -5,12 +5,13 @@
 // and get rid of the functions themselves
 /* beautify ignore:start */
 
-const _BE = true, _LE = false; //endianness for read_int16+
+var _BE = true, _LE = false; //endianness for read_int16+
 //little-endian = reversed notation (Intel, ZX Spectrum),
 //big-endian = direct notation (TCP/IP, Motorola, Amiga)
 //For the BitReader Object, BE is MSB and LE is LSB (intuitively)
-const CS_ALL = true, CS_BEST = false; //charStat needall 
-const TOEOF = -1; //use for the size parameter in findSignature
+var CS_ALL = true, CS_BEST = false; //charStat needall 
+var FINT_QUICK = FINT_FAST = FINT_1 = true; //findIntersections: find just one for speed's sake
+var TOEOF = -1; //use for the size parameter in findSignature
 
 // ---------- START OF PRE-v3.06 CODE --------------------
 
@@ -61,52 +62,61 @@ File.readShort = function(nOffset) { return X.I16(nOffset,_LE) }
 
 // The encoding tables start with 7F, not 80! 7F is undefined in many charsets but it's good to have something
 // The N(on)B(reakable)SP(ace) and S(oft)HY(phen) are kept as actual A0 and AD characters in this file 
-const CP437 = "⌂"+
+var CP437 = "⌂"+
 	"ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥₧ƒ"+
 	"áíóúñÑªº¿⌐¬½¼¡«»░▒▓│┤╡╢╖╕╣║╗╝╜╛┐"+
 	"└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀"+
-	"αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ ";
-const CP866 = "⌂"+ //DOS Cyrillic
+	"αßΓπΣσµτΦΘΩδ∞φε∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²■ ",
+  CP866 = "⌂"+ //DOS Cyrillic
 	'АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ'+
 	'абвгдежзийклмноп░▒▓│┤╡╢╖╕╣║╗╝╜╛┐'+
 	'└┴┬├─┼╞╟╚╔╩╦╠═╬╧╨╤╥╙╘╒╓╫╪┘┌█▄▌▐▀'+
-	'рстуфхцчшщъыьэюяЁёЄєЇїЎў°∙·√№¤■ ';
-const CP1251 = "⌂"+
+	'рстуфхцчшщъыьэюяЁёЄєЇїЎў°∙·√№¤■ ',
+  CP1251 = "⌂"+
 	"ЂЃ‚ѓ„…†‡€‰Љ‹ЊЌЋЏђ‘’“”•–—・™љ›њќћџ"+
 	" ЎўЈ¤Ґ¦§Ё©Є«¬­®Ї°±Ііґµ¶·ё№є»јЅѕї"+
 	"АБВГДЕЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ"+
-	"абвгдежзийклмнопрстуфхцчшщъыьэюя";
-const CP1252 = "⌂"+ //aka. Western aka. ISO-8859-1
+	"абвгдежзийклмнопрстуфхцчшщъыьэюя",
+  CP1252 = "⌂"+ //aka. Western aka. ISO-8859-1
 	"€・‚ƒ„…†‡ˆ‰Š‹Œ・Ž・・‘’“”•–—˜™š›œ・žŸ"+
 	" ¡¢£¤¥¦§¨©ª«¬・®¯°±²³´µ¶·¸¹º»¼½¾¿"+
 	"ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß"+
-	"àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ";
-const KOI8R = "⌂"+ //aka. RFC 1489, Morse code based
+	"àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ",
+  KOI8R = "⌂"+ //aka. RFC 1489, Morse code based
 	'─│┌┐└┘├┤┬┴┼▀▄█▌▐░▒▓⌠■∙√≈≤≥ ⌡°²·÷'+
 	'═║╒ё╓╔╕╖╗╘╙╚╛╜╝╞╟╠╡Ё╢╣╤╥╦╧╨╩╪╫╬©'+
 	'юабцдефгхийклмнопярстужвьызшэщчъ'+
-	'ЮАБЦДЕФГХИЙКЛМНОПЯРСТУЖВЬЫЗШЭЩЧЪ';
-const JISX0201 = "⌂"+
+	'ЮАБЦДЕФГХИЙКЛМНОПЯРСТУЖВЬЫЗШЭЩЧЪ',
+  JISX0201 = "⌂"+
 	"→-‚ƒ„…†‡ˆ‰Š‹Œ↑Ž³™‘’“”•–—˜™š›œ¢žŸ"+ //decided to mix it with cp1252
 	"→｡｢｣､･ｦｧｨｩｪｫｬｭｮｯｰｱｲｳｴｶｷｸｹｺｻｼｽｾｿﾀ"+
 	"ﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝﾞﾟ"+
-	"àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ";
-const CPAmiga = "⫽"+ // alternatively, "▒""
+	"àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ",
+  CPAmiga = "⫽"+ // alternatively, "▒""
 	"абвгдежзийклмнопрстуфхцчшщъыьэюя"+ //0x80~0x9F display Cyrillics, just to fill the void
 	" ¡¢£¤¥¦§¨©ª«¬–®¯°±²³´µ¶·¸¹º»¼½¾¿"+
 	"ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß"+
-	"àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ";
-const CPRISCOS = "⌂"+
+	"àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ",
+  CPRISCOS = "⌂"+
 	"€Ŵŵ◰﯀Ŷŷ�⇦⇨⇩⇧…™‰•‘’‹›“”„–—−Œœ†‡ﬁﬂ"+
 	" ¡¢£¤¥¦§¨©ª«¬­®¯°±²³´µ¶·¸¹º»¼½¾¿"+
 	"ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞß"+
-	"àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ";
-const CPAtariST = "⌂"+
+	"àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ",
+  CPATASCII = ['▶',
+	'🖤','├','▊','┘','┤','┐','╱','╲','◤','▛','◥','▙','▟','▆','￣',
+	'▜','♣','┌','─','┼','◘','▀','▐','┬','┴','▐','└','\n','↑','↓','←','→',
+	'█','！','”','＃','＄','％','＆','’','（','）','＊','＋','，','ー','．',
+	'/','𝟶','𝟷','𝟸','𝟹','𝟺','𝟻','𝟼','𝟽','𝟾','𝟿','：','；','＜','＝','＞','？',
+	'＠','𝙰','𝙱','𝙲','𝙳','𝙴','𝙵','𝙶','𝙷','𝙸','𝙹','𝙺','𝙻','𝙼','𝙽','𝙾',
+	'𝙿','𝚀','𝚁','𝚂','𝚃','𝚄','𝚅','𝚆','𝚇','𝚈','𝚉','【','\\','】','＾','＿',
+	'♦','𝚊','𝚋','𝚌','𝚍','𝚎','𝚏','𝚐','𝚑','𝚒','𝚓','𝚔','𝚕','𝚖','𝚗','𝚘',
+	'𝚙','𝚚','𝚛','𝚜','𝚝','𝚞','𝚟','𝚠','𝚡','𝚢','𝚣','♠','-','↰','◁','▷'], //arrow up then NW (🢰) not included for UTF limitations
+  CPAtariST = "⌂"+
 	"ÇüéâäàåçêëèïîìÄÅÉæÆôöòûùÿÖÜ¢£¥ßƒ"+
 	"áíóúñÑªº¿⌐¬½¼¡«»ãõØøœŒÀÃÕ¨´†¶©®™"+
 	"ĳĲאבגדהוזחטיכלמנסעפצקרשתןךםףץ§∧∞"+
-	"αβΓπΣσµτΦΘΩδ∮φ∈∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²³¯";
-const CPSpeccy = ['©', //too SPECIAL with all the tokens-for-characters, gotta use lists
+	"αβΓπΣσµτΦΘΩδ∮φ∈∩≡±≥≤⌠⌡÷≈°∙·√ⁿ²³¯",
+  CPSpeccy = ['©', //too SPECIAL with all the tokens-for-characters, gotta use lists
 	'  ',' ▀','▀ ','▀▀',' ▄',' █','▀▄','▄█', '▄ ','▄▀','█ ','█▀','▄▄','▄█','█▄','██', //80~F
 	'𝘼','𝘽','𝘾','𝘿','𝙀','𝙁','𝙂','𝙃','𝙄','𝙅','𝙆','𝙇','𝙈','𝙉','𝙊','𝙋', //90~F
 	'𝙌','𝙍','𝙎','𝚉𝚇¹²⁸','⏯️','𝚁𝙽𝙳','𝙸𝙽𝙺𝙴𝚈$','π', '𝙵𝙽 ','𝙿𝙾𝙸𝙽𝚃 ','𝚂𝙲𝚁𝙴𝙴𝙽$ ','𝙰𝚃𝚃𝚁 ','𝙰𝚃 ','𝚃𝙰𝙱 ','𝚅𝙰𝙻$ ','𝙲𝙾𝙳𝙴' , //A0~F
@@ -114,22 +124,32 @@ const CPSpeccy = ['©', //too SPECIAL with all the tokens-for-characters, gotta 
 	'𝚄𝚂𝚁 ','𝚂𝚃𝚁$ ','𝙲𝙷𝚁$ ','𝙽𝙾𝚃 ','𝙱𝙸𝙽 ','𝙾𝚁 ','𝙰𝙽𝙳 ','≤', '≥','≠','𝙻𝙸𝙽𝙴 ','𝚃𝙷𝙴𝙽 ','𝚃𝙾 ','𝚂𝚃𝙴𝙿 ','𝙳𝙴𝙵 𝙵𝙽 ','𝙲𝙰𝚃 ', //C0~F
 	'𝙵𝙾𝚁𝙼𝙰𝚃 ','𝙼𝙾𝚅𝙴 ','𝙴𝚁𝙰𝚂𝙴 ','𝙾𝙿𝙴𝙽 # ','𝙲𝙻𝙾𝚂𝙴 # ','𝙼𝙴𝚁𝙶𝙴 ','𝚅𝙴𝚁𝙸𝙵𝚈 ', '𝙱𝙴𝙴𝙿 ','𝙲𝙸𝚁𝙲𝙻𝙴 ','𝙸𝙽𝙺 ','𝙿𝙰𝙿𝙴𝚁 ','𝙵𝙻𝙰𝚂𝙷 ','𝙱𝚁𝙸𝙶𝙷𝚃 ','𝙸𝙽𝚅𝙴𝚁𝚂𝙴 ','𝙾𝚅𝙴𝚁 ','𝙾𝚄𝚃 ', //D0~F
 	'𝙻𝙿𝚁𝙸𝙽𝚃 ','𝙻𝙻𝙸𝚂𝚃 ','𝚂𝚃𝙾𝙿 ','𝚁𝙴𝙰𝙳 ','𝙳𝙰𝚃𝙰 ','𝚁𝙴𝚂𝚃𝙾𝚁𝙴 ','𝙽𝙴𝚆 ', '𝙱𝙾𝚁𝙳𝙴𝚁 ','𝙲𝙾𝙽𝚃𝙸𝙽𝚄𝙴 ','𝙳𝙸𝙼 ','𝚁𝙴𝙼 ','𝙵𝙾𝚁 ','𝙶𝙾 𝚃𝙾 ','𝙶𝙾 𝚂𝚄𝙱 ','𝙸𝙽𝙿𝚄𝚃 ','𝙻𝙾𝙰𝙳 ', //E0~F
-	'𝙻𝙸𝚂𝚃 ','𝙻𝙴𝚃 ','𝙿𝙰𝚄𝚂𝙴 ','𝙽𝙴𝚇𝚃 ','𝙿𝙾𝙺𝙴 ','𝙿𝚁𝙸𝙽𝚃 ','𝙿𝙻𝙾𝚃 ', '𝚁𝚄𝙽 ','𝚂𝙰𝚅𝙴 ','𝚁𝙰𝙽𝙳𝙾𝙼𝙸𝚉𝙴 ','𝙸𝙵 ','𝙲𝙻𝚂','𝙳𝚁𝙰𝚆 ','𝙲𝙻𝙴𝙰𝚁 ','𝚁𝙴𝚃𝚄𝚁𝙽', '𝙲𝙾𝙿𝚈']; //F0~F
-const Chars0to1F = "・☺☻♥♦♣♠•◘○◙♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼"; //#0 is a small dot from Japanese
-const Chars0to1FLF = "・☺☻♥♦♣♠•◘○\x0A♂♀♪♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼";
-const Chars0to1FCRLF = "・☺☻♥♦♣♠•◘○\x0A♂♀\x0D♫☼►◄↕‼¶§▬↨↑↓→←∟↔▲▼";
-const Chars0to1FSpeccy = "\0\1\2\3\4\5，📝⬅➡⬇⬆⌫\x0A№\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F"; //not mixing...
+	'𝙻𝙸𝚂𝚃 ','𝙻𝙴𝚃 ','𝙿𝙰𝚄𝚂𝙴 ','𝙽𝙴𝚇𝚃 ','𝙿𝙾𝙺𝙴 ','𝙿𝚁𝙸𝙽𝚃 ','𝙿𝙻𝙾𝚃 ', '𝚁𝚄𝙽 ','𝚂𝙰𝚅𝙴 ','𝚁𝙰𝙽𝙳𝙾𝙼𝙸𝚉𝙴 ','𝙸𝙵 ','𝙲𝙻𝚂','𝙳𝚁𝙰𝚆 ','𝙲𝙻𝙴𝙰𝚁 ','𝚁𝙴𝚃𝚄𝚁𝙽', '𝙲𝙾𝙿𝚈'], //F0~F
+  Chars0to1F = "・☺☻♥♦♣♠•◘○◙♂♀♪♫☼▶◀↕‼¶§▬↨↑↓→←∟↔▲▼", //#0 is a small dot from Japanese
+  Chars0to1FLF = "・☺☻♥♦♣♠•◘○\x0A♂♀♪♫☼▶◀↕‼¶§▬↨↑↓→←∟↔▲▼",
+  Chars0to1FCRLF = "・☺☻♥♦♣♠•◘○\x0A♂♀\x0D♫☼▶◀↕‼¶§▬↨↑↓→←∟↔▲▼",
+  Chars0to1FSpeccy = "\x00\x01\x02\x03\x04\x05，📝⬅➡⬇⬆⌫\x0A№\x0F\x10\x11\x12\x13\x14\x15\x16\x17\x18\x19\x1A\x1B\x1C\x1D\x1E\x1F", //not mixing...
+  Chars0to1FATASCII = "♥├◨┘┤┐／╲◢▗◣▝▘￣▂▖♣┌─┼•▄▎┬┴▌└␛↑↓←→",
+  Chars0to1FATASCII2 = "áùÑÉçôòì£ïüäöúóöÜâûîéèñêȧàȦ␛↑↓←→",
+  Chars0to1FATASCII_PL = "ŹąźćŚėöÖ£üßŁłŃÓ√ĘśäÜĆĄŻÄż␛↑↓←→",
+  Chars0to1FAtariX = "áùÑÉçôòì£ïüäÖúóöÜâûîéèñêȧàȦË↑↓←→";
+
 
 /**
- * Decode a 1-byte encoding from a byte array using the 128-byte-long table given,
+ * Decode a 1-byte-per-character encoding from a byte array using the 129-byte-long table given,
  * as well as a table to display the first 32 characters.
  * @param {[uint8]} ansi - an array of uint8 (returned by readBytes).
  * @param {String[0x81]} dectbl - a decoding table; just make a const here in db/read for that
- * @param {bool} zstop (optional, default=true) - whether to stop reading on 0 (ASCIIZ behaviour)
- * @param {Array} tbl01F (optional, default=Chars0to1FCRLF) - which table to use for the first 32 characters
- * @returns {String} a string value usable with js.
+ * @param {bool} [zstop =true] - whether to stop reading on 0 (ASCIIZ behaviour)
+ * @param {Array} [tbl01F=Chars0to1FCRLF] - which table to use for the first 32 characters
+ * @returns {String} a string value usable with js, or an empty line if the decoding table wasn't found.
+ * @example
+ * 𝑓([7, 0x7F, 0, 0x32], true, Chars0to1FSpeccy, CPSpeccy]) === "📝©"
+ * @example
+ * 𝑓("\x07\x7F\x00\x32", false, Chars0to1FSpeccy, CPSpeccy]) === "📝© 2"
  */
 function decEncoding(ansi, dectbl, zstop, tbl01F) {
+	if(typeof dectbl === 'undefined') return '';
 	if(typeof zstop === 'undefined') zstop = true;
 	if(typeof tbl01F === 'undefined')
 		if(dectbl == CPSpeccy) tbl01F = Chars0to1FSpeccy;
@@ -140,16 +160,21 @@ function decEncoding(ansi, dectbl, zstop, tbl01F) {
 		else if(ansi[i] < 0x80)
 			switch(ansi[i]) { // 7-bit variation processing
 			case 0x0E: if(dectbl == JISX0201 || dectbl == KOI8R) bit8 = 0x80;
-				else s += tbl01F[0xE]; break;
+				else s += tbl01F[0xE];  break;
 			case 0x0F: if(dectbl == JISX0201 || dectbl == KOI8R) bit8 = 0;
-				else s += tbl01F[0xF]; break;
-			case 0x5C: if(dectbl == JISX0201) s += "¥"; else s += "\\"; break;
-			case 0x5E: if(dectbl == CPSpeccy) s += '↑'; else s += '^'; break;
-			case 0x60: if(dectbl == CPSpeccy) s += '£'; else s += '`'; break;
-			case 0x7E: if(dectbl == JISX0201) s += "‾"; else s += "~"; break;
+				else s += tbl01F[0xF];  break;
+			case 0x5C: if(dectbl == JISX0201) s += '¥'; else s += '\\';  break;
+			case 0x5E: if(dectbl == CPSpeccy) s += '↑'; else s += '^';  break;
+			case 0x60: if(dectbl == CPSpeccy) s += '£'; else s += '`';  break;
+			case 0x7B: if(dectbl == CPATASCII)
+				if(tbl01F == Chars0to1FATASCII2) s += 'Ä';
+				else if(tbl01F == Chars0to1FATASCII_PL) s += ' '; //the Poles didn't need the spades without the other 3 :D
+					else s += '♠';
+				else s += '{'; break;
+			case 0x7D: if(dectbl == CPATASCII) s += '↖'; else s += '}'; break; //arrow up then NW (🢰) not included for UTF limitations
+			case 0x7E: if(dectbl == JISX0201) s += '‾'; else if(dectbl == CPATASCII) s += '◀'; else s += '~';  break;
 			case 0x7F:
-				if(dectbl != JISX0201) s += dectbl[0];
-				else s += String.fromCharCode(bit8+ansi[i]); break;
+				if(dectbl != JISX0201) s += dectbl[0]; else s += String.fromCharCode(bit8+ansi[i]);  break;
 			default:
 				if(!bit8 && ansi[i] >= 0 && ansi[i] < 0x20) s += tbl01F[ansi[i]];
 				else s += String.fromCharCode(bit8+ansi[i]);
@@ -161,13 +186,14 @@ function decEncoding(ansi, dectbl, zstop, tbl01F) {
 
 
 /**
- * Decode a 1-byte encoding from file using the 128-byte-long table given.
+ * Decode a 1-byte encoding from file using the 129-byte-long table given, as well as a table to display
+ * the first 32 characters. Analogous to decEncoding but reads the file directly.
  * @param {UInt} ofs - the offset to start from.
  * @param {UInt} len - the amount of bytes to read.
  * @param {String[0x81]} dectbl - a decoding table; just make a const here in db/read for that
  * @param {bool} zstop (optional, default=true) - whether to stop reading on 0 (ASCIIZ behaviour)
  * @param {Array} tbl01F (optional, default=Chars0to1FCRLF) - which table to use for the first 32 characters
- * @returns {String} a string value usable with js.
+ * @returns {String} a string value usable with js, or an empty line if the decoding table wasn't found.
  */
 function decAnsi(ofs, len, dectbl, zstop, tbl01F) {
 	return(decEncoding(X.readBytes(ofs,len), dectbl, zstop, tbl01F))
@@ -180,6 +206,8 @@ function decAnsi(ofs, len, dectbl, zstop, tbl01F) {
  * @param {Number} mina
  * @param {Number} maxa
  * @returns {Bool}
+ * @example
+ * 𝑓(20, 10, 40) === true; 𝑓(20,10,20) === true
  */
 function isWithin(a, mina, maxa) {
 	return mina <= a && a <= maxa
@@ -191,15 +219,18 @@ function isWithin(a, mina, maxa) {
  * @param {Number} mina
  * @param {Number} maxa
  * @returns {Bool}
+ * @example
+ * 𝑓(20.1, 10.0, 40.0) === true; 𝑓(20.1, 10.0, 20.0) === false
  */
 function isInside(a, mina, maxa) {
 	return mina < a && a < maxa
 }
 
+
 /**
  * Derive a string hexadecimal value, zero-padded.
  * @param {Int} a - the numerical value.
- * @param {UInt} padz (optional,default=2) - how many characters to zero-pad.
+ * @param {UInt} [padz=2] - how many characters to zero-pad to.
  * @returns {String} The hex value, capital letters A~F, ending with "h".
  */
 function Hex(a, padz) {
@@ -211,6 +242,13 @@ function Hex(a, padz) {
 	return minus+pads+r+"h"
 }
 
+
+/**
+ * Derive a string binary value, zero-padded.
+ * @param {Int} a - the numerical value.
+ * @param {UInt} [padz=4] - how many characters to zero-pad to.
+ * @returns {String} The bin value, characters '0' or '1', ending with "b".
+ */
 function Bin(a, padz) {
 	if(typeof a === 'undefined') return "!Bin("+a+")";
 	if(typeof padz === 'undefined') padz = 4;
@@ -220,6 +258,13 @@ function Bin(a, padz) {
 	return minus+pads+r+"b"
 }
 
+
+/**
+ * Derive a string octal value, zero-padded.
+ * @param {Int} a - the numerical value.
+ * @param {UInt} [padz=3] - how many characters to zero-pad to.
+ * @returns {String} The octal value, characters 0~7, ending with "o".
+ */
 function Oct(a, padz) {
 	if(typeof a === 'undefined') return "!Oct("+a+")";
 	if(typeof padz === 'undefined') padz = 3;
@@ -229,23 +274,26 @@ function Oct(a, padz) {
 	return minus+pads+r+"o"
 }
 
+
 /**
  * Read a variable-length quantity, an unsigned integer like in MIDI files, from the file.
  * @param {UInt} ofs - the offset to start from.
  * @returns {List} [length,value] - if length (in physical bytes) = 0, the value had a problem.
+ * @example
+ * //For file containing '81 80 01  81 83 7F':
+ * 𝑓(0) === 0x4001; 𝑓(3) === 0x41FF
 **/
 function readVarUInt(ofs) {
 	if(ofs < 0 || ofs >= File.getSize()) return [0,0];
 	var t = 0, wb = 1, r = 1, o = ofs;
-	var b = File.read_uint8(o++); t = (t << 7) | (b&0x7F);
+	var b = X.U8(o++); t = (t << 7) | (b&0x7F);
 	var b_ = b; while(b_) { b_ >>= 1; wb++ }
-	while(r < 16 && (b&0x80)) {
-		b = File.read_uint8(o++); t = (t << 7) | (b&0x7F); r++
-	}
+	for(; r < 16 && (b&0x80); r++) { b = X.U8(o++); t = (t << 7) | (b&0x7F) }
 	if(wb > 64) return [0,0xFFFFFFFFFFFFFFFF]; // sizeof(target) in bits. A 64bit value should be enough, right?
 	else if(b&0x80) return [0,-1]; //EOF
 	else return [r,t]
 }
+
 
 /**
  * This object facilitates reading a file as a sequence of bits
@@ -302,6 +350,7 @@ function BitReader(nOffset, nEndian) {
 	this.bseek = function(nOfs) { this.offset = nOfs - (nOfs%8); this.buf = this.n = 0; this.read(nOfs%8); }
 }
 
+
 /**
  * Check a file slice for being all one of a lineup of specified characters.
  * @param {UInt} ofs - the offset to start from.
@@ -309,7 +358,8 @@ function BitReader(nOffset, nEndian) {
  * @param {[Array(UInt)] | UInt} bl = [0] - the list of possible u_int8 codes, or just one u_int8. 0 by default.
  * @returns {UInt} - offset if a byte in the slice doesn't belong to the list. If you go beyond EoF or all good, -1.
  * @example
- * For '00 01 02 01' at offset 6, firstNotOf (6, 4, [0,1]) === 8, and firstNotOf(6, 4, 1) === 6
+ * //For '00 01 02 01' at offset 6 in the file:
+ * firstNotOf (6, 4, [0,1]) === 8; firstNotOf(6, 4, 1) === 6
  */
 function firstNotOf(ofs, len, bl) {
 	if(ofs+len > X.Sz()) return -1; var c = i = 0;
@@ -323,17 +373,31 @@ function firstNotOf(ofs, len, bl) {
 	return i < len? ofs+i : -1
 }
 
+
 function isAllZeroes(ofs, len) { return firstNotOf(ofs, len, 0) < 0 } //a subcase for whether a slice is all zeroes 
+
 
 /**
  * If the string was too long and has been read incompletely, adds an ellipsis after the last
  * complete word, to avoid cut-off words. If `space characters' are not detected,
- * replaces the last character with an ellipsis. Does NOT do the trim().
+ * replaces the last character with an ellipsis. Does NOT do the trim() unless the whole string fits the limit.
  * Mostly usable for lengthy multiline comments/messages.
  * @param {String} a - the original incomplete string.
  * @param {Number} trim - the buffer size; if a.length == trim, we decide it was cropped.
  * @param {Number} [mintrim = 78] - don't try searching for spaces below this point.
  * @returns {String} - the resulting string.
+ * @example
+ * // Full string fits the limits, no need to search for a good cut-off place, and it's trimmed for pretty:
+ * 𝑓(" 12345 7890, 34 678. 1 3'56789", 35, 15) === "12345 7890, 34 678. 1 3'56789"
+ * @example
+ * // The length is a full match but it might be trimmed right along that length, so a good cut-off place is found:
+ * 𝑓(" 12345 7890, 34 678. 1 3'56789", 30, 15) === " 12345 7890, 34 678. 1 3…"
+ * @example
+ * // The length is a full match and last 5 characters don't have spaces, so it's treated as trimmed but it's not cut:
+ * 𝑓(" 12345 7890, 34 678. 1 3'56789", 30, 25) === " 12345 7890, 34 678. 1 3'56789…"
+ * @example
+ * // Just another example of a well-trimmed line, in which you need a lot less info that it has to offer:
+ * 𝑓(" 12345 7890, 34 678. 1 3'56789", 16, 10).trim() === "12345 7890, 34…"
  */
 function addEllipsis(a, trim, mintrim) {
 	if(!trim) trim = 0xA0;
@@ -351,36 +415,51 @@ function addEllipsis(a, trim, mintrim) {
 		return a.slice(0,Math.max(ci),mintrim)+'…';
 }
 
-/**
- * sOptions.append a string (optionally prefixed) if the space-trimmed string is not empty.
- * @param {variant} a - the string to output (safe to accidentally drop a non-string in)
- * @param {String} prefix (optional) - what to put in front of the output string
- * @param {String} suffix (optional) - what to put after the output string
- */
-function sOptionT(a, prefix, suffix) {
-  if (typeof prefix === 'undefined') prefix = ""; if (typeof suffix === 'undefined') suffix = "";
-  if ((""+a).trim() != "") sOptions = sOptions.append(prefix+(""+a).trim()+suffix)
-}
 
 /**
- * sOptions.append a string (optionally prefixed) if the string is not empty.
+ * sOptions.appendS a string (optionally prefixed) if the space-trimmed string is not empty.
  * @param {variant} a - the string to output (safe to accidentally drop a non-string in)
- * @param {String} prefix (optional) - what to put in front of the output string
- * @param {String} suffix (optional) - what to put after the output string
+ * @param {String} [prefix=''] - what to put in front of the output string
+ * @param {String} [suffix=''] - what to put after the output string
+ * @param {String} [sep=','] - what to put between the previous string and this addition
+ * @example
+ * //for sOptions === '  ch:2':
+ * 𝑓('hello world  ', 'msg:"', '"', ', '); //sOptions === 'ch:2, msg:"hello world\"'
+ */
+function sOptionT(a, prefix, suffix, sep) {
+  if (typeof prefix === 'undefined') prefix = ""; if (typeof suffix === 'undefined') suffix = "";
+  if (typeof sep === 'undefined') sep = ',';
+  if ((""+a).trim() != "") sOptions = sOptions.appendS(prefix+(""+a).trim()+suffix, sep)
+}
+
+
+/**
+ * sOptions.appendS a string (optionally prefixed) if the string is not empty.
+ * @param {variant} a - the string to output (safe to accidentally drop a non-string in)
+ * @param {String} [prefix=''] - what to put in front of the output string
+ * @param {String} [suffix=''] - what to put after the output string
+ * @param {String} [sep=','] - what to put between the previous string and this addition
+ * @example
+ * //for sOptions === '  ch:2':
+ * 𝑓('hello world  ', 'msg:"', '"', ', '); //sOptions === 'ch:2, msg:"hello world\"'
  */
 function sOption(a, prefix, suffix) {
   if (typeof prefix === 'undefined') prefix = ""; if (typeof suffix === 'undefined') suffix = "";
-  if ((""+a).trim() != "") sOptions = sOptions.append(prefix+(""+a).trim()+suffix)
+  if (typeof sep === 'undefined') sep = ',';
+  if ((""+a) != "") sOptions = sOptions.appendS(prefix+(""+a)+suffix, sep)
 }
 
+
 /**
- * A more verbose (but still concise) way of outputting the calculated size(s, derived using different algorithms),
+ * A more verbose (but still concise) way of outputting the calculated size(s), derived using different algorithms,
  * taking into account and visualising the difference from the actual file size.
- * @param {...Number} sizes - numerical values
- * For example, if a file is 100 bytes long, outSz(90,100,105) will yield "90(+10)/100/105(-5!)"
- * The "!)" thus indicates the file is too short compared to the algorithmic estimation.
  * If some of the reported sizes match, the value will only be displayed once.
  * It's still a good idea to add "/malformed!short" to the version string — it's visible without isVerbose.
+ * @param {...Number} sizes - numerical values
+ * @example
+ * // If a file is 100 bytes long:
+ * outSz(90,100,105) === "90(+10)/100/105(-5!)"
+ * // The "!)" thus indicates the file is too short compared to the algorithmic estimation.
  */
 function outSz() { if(!arguments.length || typeof arguments[0] === 'undefined') return "?";
 	var sizes = [], origs = [];
@@ -396,14 +475,17 @@ function outSz() { if(!arguments.length || typeof arguments[0] === 'undefined') 
 	return sizes.join("/")
 }
 
+
 /**
  * Converts an array to a better-looking line than the usual flat thing DiE's _log would output.
  * @param {Array} a - Array to process consisting of any information including arrays
- * @param {Int = 10} base - If an integer value is found, in which base to display it
- * @param {Int} zeropad - If an integer value is found, how many zeroes to pad it with (smart by default)
+ * @param {Int} [base = 10] - If an integer value is found, in which base to display it
+ * @param {Int} [zeropad] - If an integer value is found, how many zeroes to pad it with (smart by default)
  * @returns {String} A beautiful output!
- * Ex. 𝑓([ 1, [5, [10,30]], [[23],'test'] ], 2) = "[0001, [0101, [1010, 11110]], [[10111], test]]"
- * Ex. 𝑓([ 1, [5, [10,30]], [[23],'test'] ], 16) = "[01, [05, [0A, 1E]], [[17], test]]"
+ * @example
+ * 𝑓([ 1, [5, [10,30]], [[23],'test'] ], 2) == "[0001, [0101, [1010, 11110]], [[10111], "test"]]"
+ * 𝑓([ 1, [5, [10,30]], [[23],'test'] ], 2, 8) == "[00000001, [00000101, [00001010, 00011110]], [[00010111], "test"]]"
+ * 𝑓([ 1, [5, [10,30]], [[23],'test'] ], 16) == "[01, [05, [0A, 1E]], [[17], "test"]]"
  */
 function outArray(a,base,pad) {
 	if(!Array.isArray(a)) return a;
@@ -420,15 +502,19 @@ function outArray(a,base,pad) {
 	return '['+s.join(', ')+']' //put '[ '...' ]' for an even more spaced output
 }
 
+
 /**
- * A shorthand for the situation where you compare the file suffix to what you'd expect. Use as the option to isHeuristicScan being true.
+ * A shorthand for the situation where you compare the file suffix to what you'd expect.
+ * Use as the option to Binary.isHeuristicScan().
  * @param {String} a - the expected file suffix, case-insensitive, no heading period unlike Python
  * @returns {bool} if a match is reached
  */
 function extIs(a) { return File.getFileSuffix().toLowerCase() == a.toLowerCase() }
 
+
 /**
- * slashTag formats a string in a way that's useful when a tag has two versions (for ex. in different languages). It will either show both with "/" in between, or one of them if the other one's an empty string, or an empty string if both are empty.
+ * slashTag formats a string in a way that's useful when a tag has two versions (for ex. in different languages).
+ * It will either show both with "/" in between, or one of them if the other one's an empty string, or an empty string if both are empty.
  * @param {String} a - the first of the two
  * @param {String} b - the second of the two
  * @returns {String}
@@ -444,6 +530,7 @@ function slashTag(a, b) {
 	else return ""
 }
 
+
 /**
  * createOrderlyHuffmanTable is just for detections but it does return the table for further checks. Or it returns false.
  * @param {Array} lent - the lengths table
@@ -451,7 +538,6 @@ function slashTag(a, b) {
  * @param {BitReader} br - a BitReader object pointing somewhere at the right position for this. The provided BitReader WILL change state.
  * @returns {Array or false}
 */
-// createOrderlyHuffmanTable is just for detections but it does return the table for further checks. Or it returns false.
 function createOrderlyHuffmanTable(lent, btl, br) {
 	var md = 32, Md = reall = code = 0; var _t = [], fi = [], li = [], ni = [];
 	for(i = 0; i < 33; i++) fi[i] = 0xFFFF;
@@ -477,12 +563,14 @@ function createOrderlyHuffmanTable(lent, btl, br) {
 	return _t
 }
 
+
 /**
  * Outputs time in seconds as short human-readable, with a "h:mm:ss" alternative when < 1 day.
- * Millenia, centuries and years a sidereal years, a "month" duration is 1/12 of such year.
+ * Millenia, centuries and years as sidereal years, a "month" duration is 1/12 of such year.
  * @param {Number} seconds
  * @returns {String}
- * Ex. 𝑓(123456789) = "31Y10M4w21h33m9s"; 𝑓(1234567) = "2w6h56m7s"; 𝑓(12345) = "3:25:45"
+ * @example
+ * 𝑓(123456789) === "31Y10M4w21h33m9s"; 𝑓(1234567) === "2w6h56m7s"; 𝑓(12345) === "3:25:45"
  */
 function secondsToTimeStr(s) {
 	const mul = [/*millenia*/315581497635,/*centuries*/3155814976,/*yrs*/31558150,/*mns*/2629846,/*wks*/604800,86400,3600,60];
@@ -494,16 +582,18 @@ function secondsToTimeStr(s) {
 	if(mn) r = mn+"M"+r; if(yy) r = yy+"Y"+r; if(cc) r = cc+"C"+r; if(mi) r = ci+"Mil"+r; return r
 }
 
+
 /**
  * Examines a sequence and gives a generalised idea of what sort of characters a string is (mostly) made of.
+ * Parse the result using indexOf.
  * Could be useful for validating structured files with human-filled fields.
  * @param {String/Number[]} s - your string in question, or a List of charcodes.
- * @param {Boolean=false} needall - if true, you have "allascallt allnum" for a line of spaces, else just "allt ".
- * @returns {String} - at least one or a combo of these, optional prefix "all" (otherwise "mostly"):
+ * @param {Boolean} [needall=CS_BEST] - if true, you have "allascallt allnum" for a line of spaces, else just "allt ".
+ * @returns {String} - at least one or a combo of these, optional prefix "all" (otherwise treat as "mostly"):
  *  '?': wrong type; 'empty': 0 length; '00': zeroes; 't ': tabs/spaces; 'ctl': 0-1Fh & 7Fh; 'num': numerical;
  *  'asc': 20h-7Eh; 'xsc': zeroes+tabs+♫+FFh+crlf+ascii; 'foreign': 00,t, ,crlf, 80h+; 'any': decision cannot be made.
- * Parse the result using indexOf.
- * Ex. 𝑓("-123 456.789") = "allnum", 𝑓("-123 456.789",1) = "allnumallascallxscallforeign"
+ * @example
+ * 𝑓("-123 456.789") === "allnum"; 𝑓("-123 456.789", CS_ALL) === "allnumallascallxscallforeign"
  */
 /* beautify preserve:start */
 function charStat() {
@@ -549,7 +639,9 @@ function charStat() {
 	if(r == "") return "any"+o; else return r
 }
 
+
 // PATCHING FUNCTIONALITY; promised to become native
+// May be useful in some ugly cases for quickly pre-processing the file contents which are then detected.
 var patcheddata = [];
 function rpU8(adr) { //read patched data or passthrough, U8
 	for(var i=0; i < patcheddata.length; i++) if(patcheddata[i][0] == adr) return patcheddata[i][1];
@@ -576,12 +668,16 @@ function wpU32be(adr,val) { //add to patches, U32 BE
 function patchLength() { return patcheddata.length }
 function patchClear() { patcheddata = [] }
 
+
 /**
- * Discovers gaps in an array of pairs of numbers, with a minimum-to-report gap as optional parameter.
- * @param {Array of arrays[2]} lst - List to process consisting of ranges defined as [offset,length]
- * @param {UInt = 1} mingap - Minimum gap, default to at least 1 byte between the ranges
+ * Discovers gaps in an unsorted array of pairs of [offset, length], with a minimum-to-report gap as optional parameter.
+ * Useful for extra checks in file resource formats, without signatures but not sparse, so you can tell whether the resource blocks have no spaces in-between and don't overlap, using this and findIntersections.
+ * @param {Array of arrays[2]} lst - List to process consisting of ranges
+ * @param {UInt} [mingap=1] - Minimum gap, default to at least 1 byte between the ranges. Change for aligned data
  * @returns {Array of arrays[2]} Sorted list of gap ranges in the same format
- * Ex. 𝑓([ [10,10], [25,5], [40,10] ]) = [[20,5], [30,10]] 
+  * @example
+  * // We have data defined in 10..20, 25..30, 40..50:
+  * 𝑓([ [10,10], [25,5], [40,10] ]) === [ [20,5], [30,10] ] 
  */
 function findGaps(lst, mingap) {
 	var i, r = []; /* tests for input typing follow */ if(!Array.isArray(lst) || lst.length < 2) return r;
@@ -591,17 +687,20 @@ function findGaps(lst, mingap) {
 	function sf(a, b) { if(a[0] != b[0]) return a[0]-b[0]; else return a[1]-b[1] }
 	var a = lst.sort(sf);
 	for(i = 1; i < a.length; i++)
-		if((t=a[i-1][0]+a[i-1][1]) < a[i][0] && a[i][0]-mingap >= 0) r.push([t, a[i][0]-t])
+		if((t=a[i-1][0]+a[i-1][1]) < a[i][0] && a[i][0]-t-mingap >= 0) r.push([t, a[i][0]-t])
 	return r
 }
 
+
 /**
- * Discovers intersections in an array of pairs of numbers, considering all possible pairs.
+ * Discovers intersections in an unsorted array of pairs of [offset, length], considering all possible pairs.
+ * Useful for extra checks in file resource formats, without signatures but not sparse, so you can tell whether the resource blocks don't overlap and have no spaces in-between, using this and findGaps.
  * @param {Array of arrays[2]} lst - List to process consisting of ranges defined as [offset,length]
- * @param {Boolean = false} detectone - Stop searching after finding even one intersection
+ * @param {Boolean} [detectone=false] - Stop searching after finding even one intersection
  * @returns {Array of arrays[2]} Sorted list of intersection ranges in the same format; if length > 0, intersection present
- * Ex. 𝑓([ [10,20], [15,10], [23,30] ]) = [[15,10], [23,2], [23,7]]
- * Ex. 𝑓([ [10,20], [15,10], [23,30] ], true) = [[15,10]]
+ * @example
+ * 𝑓([ [10,20], [15,10], [23,30] ]) = [[15,10], [23,2], [23,7]]
+ * 𝑓([ [10,20], [15,10], [23,30] ], true) = [[15,10]]
  */
 function findIntersections(lst,detectone) {
 	var i, t, r = []; /* tests for input typing follow */ if(!Array.isArray(lst) || lst.length < 2) return r;
@@ -617,6 +716,27 @@ function findIntersections(lst,detectone) {
 			}
 	return r.sort(sf);
 }
+
+
+// Heuristic considerations for whether the sample name will be interesting enough to an average user.
+//
+// The optional "ctx" is context, an array of other sample names (or other tokens) known so far.
+//   For example, if the file's just starting and you're on the fence whether "loop" is good to know or not,
+// it'll give you the chance to put it there just in case, but not if the other names are "boring" or "useless".)
+//   Try not to use it but also feel free to use it! Fun takes priority.
+//
+// Please add conditions liberally!
+function funSampleName(n, ctx) {
+	var fun = 1, bore = 0; //by default, we're curious about the new line just a little
+	if(n.trim() == '') return false;
+	if(n.endsWithCI('.wav') || n.endsWithCI('.smp')) bore++;
+	if(n.beginsWithCI('ST-') || n.beginsWithCI('df0:')) bore++;
+	if(n.beginsWithCI('#')) fun += 5;
+	if(/.*(dr[u]?m\d+|loop\d+|strings?\d*|bass\s*|guitar\s*\d+|snare\s*\d+).*/i.test(n)) bore++;
+//_setResult('fsn',n,'fun='+fun+' bore='+bore,'')
+	return fun > bore
+}
+
 
 b64Chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 function toBase64(buf) {
@@ -640,29 +760,6 @@ function toBase64(buf) {
 	return r
 }
 
-/**
- * If it's an Amiga hunk file, proceeds to process hunks
- * @returns {Int} -1 in case of errors, otherwise expected size
- */
-function calcAmigaFileSize() {
-	if(!X.c("000003F3")) return -1; //is it an Amiga hunk file?
-	var p = 4, x = sz = i = reslibs = 0, sizes = [], load = true;
-	//library strings:
-	while(p < X.Sz()) {
-		x = X.U32(4,_BE); p += 4; if(!reslibs && x) load = false; if(x) reslibs++; else break; p += 4*x
-	}
-	var hunks = X.U32(p+8,_BE) - X.U32(p+4,_BE) + 1; p += 12;
-sOption(hunks+' hunks')
-	//hunk table:
-	for(i=0; i < hunks && p < X.Sz(); i++,p+=4) {
-		var t = X.U32(p,_BE), add = (t>>30) == 3? 4: 0; t &= 0x3FFFFFFF; t <<= 2; t += add;
-_log('@'+Hex(p)+' hunk#'+i+' = '+Hex(t));
-		sizes.push(t); sz += t
-	}
-	//traverse hunks:
-	sz += p; //if(sz >= X.Sz()) return -1;
-	return sz
-}
 
 function _logBase64(buf) { //simply plops the buffer contents into log stream with a suitable MIME header
 	var fn = File.getFileBaseName()+'.'+File.getFileCompleteSuffix();
@@ -671,6 +768,7 @@ function _logBase64(buf) { //simply plops the buffer contents into log stream wi
 	_log(buf)
 }
 
+
 function _logHex(buf) { //same but no header and in hex
 	var o = ''; for(i=0; i < buf.length; i++) {
 		if(!(i % 16)) o += (i? '  |\n': '')+i.toString(16).padStart(6,'0')+' |'; if(!(i % 8)) o += ' ';
@@ -678,6 +776,7 @@ function _logHex(buf) { //same but no header and in hex
 	}
 	_log('-8<---'); _log(o); _log('--->8-')
 }
+
 
 function _logText(buf) { //same but as text put through CP866, or all file with zeroes as spaces and control characters as emoji
 	_log('-8<---['+(typeof buf)+' '+(buf.length)+' bytes]---');
@@ -688,5 +787,6 @@ function _logText(buf) { //same but as text put through CP866, or all file with 
 	_log('--->8-')
 }
 
-function _l2r(name,pos,issue) { _setResult('debug',name,'@'+Hex(pos),issue); }
+
+function _l2r(name, pos, issue) { _setResult('debug', issue, '@'+Hex(pos), name) }
 /* beautify ignore:end */
