@@ -10,7 +10,7 @@
 ## 🚀 Getting Started
 
 - **[💎 Download release](https://github.com/horsicq/DIE-engine/releases)**
-- **[🧪 Download dev/beta](https://github.com/horsicq/Detect-It-Easy/releases/tag/Beta)**
+- **[🧪 Download dev/beta](https://github.com/horsicq/DIE-engine/releases/tag/Beta)**
 - **[🚀 DIE API Library (for Developers)](https://github.com/horsicq/die_library)**
 - [📋 Changelog](https://github.com/horsicq/Detect-It-Easy/blob/master/changelog.txt)
 - [💬 Contribute to Translations](https://github.com/horsicq/XTranslation)
@@ -67,6 +67,8 @@ Unknown formats undergo heuristic analysis, providing identification for both kn
   - **Arch Linux**: AUR package [detect-it-easy-git](https://aur.archlinux.org/packages/detect-it-easy-git/)
   - **openSUSE**: [OBS](https://build.opensuse.org/package/show/home:mnhauke/detect-it-easy)
   - **REMnux**: Malware analysis distribution
+  
+  [![Packaging status](https://repology.org/badge/vertical-allrepos/detect-it-easy.svg)](https://repology.org/project/detect-it-easy/versions)
 
 > [!NOTE]
 > Use **Detect It Easy** bot via **Telegram** to quickly check files: [**@detectiteasy_bot**](https://t.me/detectiteasy_bot)
