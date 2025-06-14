@@ -62,17 +62,17 @@
 // Please do not read the code out loud unless you have exorcism skills
 
 const logType = {
-        warning: -2,
-        about: -1,
-        nothing: 0,
-        any: 1,
-        net: 2
-    },
+    warning: -2,
+    about: -1,
+    nothing: 0,
+    any: 1,
+    net: 2
+},
     heurLabel = "HEUR";
 
 var lastOffsetDetected = "0x00";
 
-const detect = main;
+function detect() { main(); }
 
 function main() {
     if (stubForWrongEnvironment()) return null; // 'PE' is undefined
@@ -178,11 +178,11 @@ function scanForObfuscations_NET() {
     var isEntryPointModified = false;
 
     const vbNetEntries = [
-            "Main",
-            "main",
-            "MAIN",
-            "MyApplication"
-        ],
+        "Main",
+        "main",
+        "MAIN",
+        "MyApplication"
+    ],
         defaultEntries = [ // like MSIL, C#, C++ NET etc
             "Main",
             "main", // F# entry
@@ -309,7 +309,7 @@ function scanForObfuscations_NET() {
 
     const badChars = '_-=+~!@#$%^&*()"№;%:?*():;,/\\|\'`<>.0123456789'; // Very very bad!
 
-    if (PE.getNumberOfSections() > (!isClrNET() ? 6 : 10) || !PE.isSectionNamePresent(".text")) { strangeSections = true; } else {
+    if (PE.getNumberOfSections() > (!isClrNET() ? 6 : 10) || !PE.section[".text"]) { strangeSections = true; } else {
         // Iterate through each section
         for (var i = 0; i < PE.getNumberOfSections() && !strangeSections; i++) {
             const sectionName = PE.getSectionName(i);
@@ -348,9 +348,9 @@ function scanForObfuscations_NET() {
 
     if (validateNetByteCode(intConfusionXorPattern)) {
         if (validateNetByteCode( // samples by: Inx Obfuscator
-                intConfusionXorPattern +
-                (opCodes.bne_un_s + opCodes.ldc_i4_2 + opCodes.stloc_0 + opCodes.sizeof + opCodes.add)
-            ) ||
+            intConfusionXorPattern +
+            (opCodes.bne_un_s + opCodes.ldc_i4_2 + opCodes.stloc_0 + opCodes.sizeof + opCodes.add)
+        ) ||
             validateNetByteCode( // samples by: MindLated, NetShield
                 intConfusionXorPattern +
                 (opCodes.bne_un + opCodes.ldc_i4 + opCodes.stloc + opCodes.sizeof + opCodes.add)
@@ -455,9 +455,9 @@ function scanForObfuscations_NET() {
     var isCalliInvokesPresent = false;
 
     if (validateNetByteCode( // samples by: MindLated
-            opCodes.setStrict(opCodes.ldftn, "** ?? 00 0A") +
-            opCodes.setStrict(opCodes.calli, "** 00 00 11")
-        ) ||
+        opCodes.setStrict(opCodes.ldftn, "** ?? 00 0A") +
+        opCodes.setStrict(opCodes.calli, "** 00 00 11")
+    ) ||
         validateNetByteCode( // samples by: ArmDot, DarksProtector
             opCodes.idelem_i +
             opCodes.setStrict(opCodes.calli, "** 00 00 11")
@@ -474,8 +474,8 @@ function scanForObfuscations_NET() {
     var isLdftnPointersPresent = false;
 
     if (validateNetByteCode(
-            opCodes.nop + opCodes.setStrict(opCodes.ldftn, "** 00 00 06") + opCodes.stelem_i
-        ) ||
+        opCodes.nop + opCodes.setStrict(opCodes.ldftn, "** 00 00 06") + opCodes.stelem_i
+    ) ||
         validateNetByteCode(
             opCodes.nop + opCodes.setStrict(opCodes.ldftn, "** 00 00 0A") + opCodes.stelem_i
         ) ||
@@ -497,9 +497,9 @@ function scanForObfuscations_NET() {
     var isCtrlFlowPresent = false;
 
     if (validateNetByteCode( // samples by: ConfuserEx
-            opCodes.nop + opCodes.ldloc_0 + opCodes.ldc_i4 + opCodes.mul + opCodes.ldc_i4 + opCodes.xor + opCodes.br_s +
-            opCodes.nop + opCodes.ldloc_0 + opCodes.ldc_i4 + opCodes.mul + opCodes.ldc_i4 + opCodes.xor + opCodes.br_s
-        ) ||
+        opCodes.nop + opCodes.ldloc_0 + opCodes.ldc_i4 + opCodes.mul + opCodes.ldc_i4 + opCodes.xor + opCodes.br_s +
+        opCodes.nop + opCodes.ldloc_0 + opCodes.ldc_i4 + opCodes.mul + opCodes.ldc_i4 + opCodes.xor + opCodes.br_s
+    ) ||
         validateNetByteCode( // samples by: ConfuserEx (neo mod)
             opCodes.ldc_i4 + opCodes.ldc_i4 + opCodes.xor + opCodes.dup + opCodes.stloc_0 + opCodes.ldc_i4_3 + opCodes.rem_un + opCodes.switch__nobody
         ) ||
@@ -767,32 +767,32 @@ function scanForObfuscations_NET() {
     var isMathInversionsPresent = false;
 
     if (validateNetByteCode(opCodes.ldc_i4 + opCodes.not) && (
-            validateNetByteCode( // ~(-(~(-(~(-(~(-( num ))))))))
-                opCodes.ldc_i4 +
-                opCodes.not + opCodes.neg + opCodes.not + opCodes.neg +
-                opCodes.not + opCodes.neg + opCodes.not + opCodes.neg
-            ) ||
-            validateNetByteCode( // ~(~(-(-(~(~( num ))))))
-                opCodes.ldc_i4 +
-                opCodes.not + opCodes.not + opCodes.neg + opCodes.neg +
-                opCodes.not + opCodes.not
-            ) ||
-            validateNetByteCode( // ~(-(~(~(-(-( num ))))))
-                opCodes.ldc_i4 +
-                opCodes.not + opCodes.neg + opCodes.not + opCodes.not +
-                opCodes.neg + opCodes.neg
-            ) ||
-            validateNetByteCode( // ~(-(~(-(~(~( num ))))))
-                opCodes.ldc_i4 +
-                opCodes.not + opCodes.neg + opCodes.not + opCodes.neg +
-                opCodes.not + opCodes.not
-            ) ||
-            validateNetByteCode( // ~(-(~(-(~(-( num ))))))
-                opCodes.ldc_i4 +
-                opCodes.not + opCodes.neg + opCodes.not + opCodes.neg +
-                opCodes.not + opCodes.neg
-            )
-        )) {
+        validateNetByteCode( // ~(-(~(-(~(-(~(-( num ))))))))
+            opCodes.ldc_i4 +
+            opCodes.not + opCodes.neg + opCodes.not + opCodes.neg +
+            opCodes.not + opCodes.neg + opCodes.not + opCodes.neg
+        ) ||
+        validateNetByteCode( // ~(~(-(-(~(~( num ))))))
+            opCodes.ldc_i4 +
+            opCodes.not + opCodes.not + opCodes.neg + opCodes.neg +
+            opCodes.not + opCodes.not
+        ) ||
+        validateNetByteCode( // ~(-(~(~(-(-( num ))))))
+            opCodes.ldc_i4 +
+            opCodes.not + opCodes.neg + opCodes.not + opCodes.not +
+            opCodes.neg + opCodes.neg
+        ) ||
+        validateNetByteCode( // ~(-(~(-(~(~( num ))))))
+            opCodes.ldc_i4 +
+            opCodes.not + opCodes.neg + opCodes.not + opCodes.neg +
+            opCodes.not + opCodes.not
+        ) ||
+        validateNetByteCode( // ~(-(~(-(~(-( num ))))))
+            opCodes.ldc_i4 +
+            opCodes.not + opCodes.neg + opCodes.not + opCodes.neg +
+            opCodes.not + opCodes.neg
+        )
+    )) {
         log(logType.net, "Math inversions detected, offset " + lastOffsetDetected);
         isMathInversionsPresent = true;
     }
@@ -923,12 +923,12 @@ function scanForObfuscations_NET() {
         }
 
         if ((!isWatermarkPresent && (
-                validateSignature("'Obfuscated'") ||
-                validateSignature("'obfuscated'") ||
-                validateSignature("'ByAttribute'") ||
-                validateSignature("'ObfuscatorAttribute'") ||
-                validateNetObject("ObfuscationAttribute")
-            )) && !isFrameworkComponent()) // System.Reflection.ObfuscationAttribute
+            validateSignature("'Obfuscated'") ||
+            validateSignature("'obfuscated'") ||
+            validateSignature("'ByAttribute'") ||
+            validateSignature("'ObfuscatorAttribute'") ||
+            validateNetObject("ObfuscationAttribute")
+        )) && !isFrameworkComponent()) // System.Reflection.ObfuscationAttribute
         {
             isWatermarkPresent = true;
         }
@@ -940,41 +940,39 @@ function scanForObfuscations_NET() {
 
 
     const protectorsLabelsToRemove = [ // Protectors with these names will be removed from results
-            "SafeNet Sentinel LDK .NET",
-            "Xenocode Postbuild",
-            "Smart Assembly",
-            "Dotfuscator",
-            "Babel .NET",
-            "Spices.Net",
-            "Maxtocode",
-            "FISH .NET",
-            "CliSecure",
-            "CodeWall",
-            "CodeVeil",
-            "Sixxpack",
-            "DNGuard",
-            "Goliath",
-            "Agile",
-            "Yano"
-        ],
-        packersLabelsToRemove = [
-            "ChainskiCrypter",
-            "Quest PowerGUI",
-            "DataAnubis",
-            "NsPack",
-            "ASPack"
-        ],
-        protectionsLabelsToRemove = [
-            "Sentinel SuperPro dongle reference",
-            "Unikey/Activator dongle reference",
-            "Eutron SmartKey dongle reference",
-            "SenseLock dongle reference",
-            "Hardlock dongle reference",
-            "WIBU Key dongle reference",
-            "Wizzkey dongle reference",
-            "SoftLok dongle reference",
-            "NetHASP dongle reference"
-        ];
+        "SafeNet Sentinel LDK .NET",
+        "Xenocode Postbuild",
+        "Smart Assembly",
+        "Dotfuscator",
+        "Babel .NET",
+        "Spices.Net",
+        "Maxtocode",
+        "FISH .NET",
+        "CliSecure",
+        "CodeWall",
+        "CodeVeil",
+        "Sixxpack",
+        "DNGuard",
+        "Goliath",
+        "Agile",
+        "Yano"
+    ], packersLabelsToRemove = [
+        "ChainskiCrypter",
+        "Quest PowerGUI",
+        "DataAnubis",
+        "NsPack",
+        "ASPack"
+    ], protectionsLabelsToRemove = [
+        "Sentinel SuperPro dongle reference",
+        "Unikey/Activator dongle reference",
+        "Eutron SmartKey dongle reference",
+        "SenseLock dongle reference",
+        "Hardlock dongle reference",
+        "WIBU Key dongle reference",
+        "Wizzkey dongle reference",
+        "SoftLok dongle reference",
+        "NetHASP dongle reference"
+    ];
 
     // Волки делают АУФ 🐺☝️
 
@@ -1008,6 +1006,8 @@ function scanForObfuscations_NET() {
 
 function scanForAntiAnalysis_NET() {
     var options = String();
+
+    var isDetected = false;
 
 
     // Assumes the file can detect debugging protection
@@ -1178,7 +1178,10 @@ function scanForAntiAnalysis_NET() {
 
 
 
-    if (options.length != 0) {
+    if (options.length != 0) isDetected = true;
+
+
+    if (isDetected) {
         _setResult("~protection", "Anti analysis", String(), PE.isVerbose() ? options : String());
     }
 }
@@ -1269,7 +1272,7 @@ function NetOpCodes() {
 
     // setStrict sets the strict value of the opcode for substitution
     // btw I like what I do
-    this.setStrict = function(opCodeMask, value) {
+    this.setStrict = function (opCodeMask, value) {
         // Remove spaces from opcode mask and value
         opCodeMask = removeSpaces(opCodeMask);
         value = removeSpaces(value);
@@ -1293,7 +1296,7 @@ function NetOpCodes() {
     }
 
     // Sets the mask value to zero for the specified opcode
-    this.setNullValue = function(opCodeMask) {
+    this.setNullValue = function (opCodeMask) {
 
         if (opCodeMask.indexOf("??") === -1) {
             _error("Instruction does not have a body to overwrite the value.");
@@ -1362,14 +1365,14 @@ function scanForPackersAndCryptors_NET_and_Native() { // For .NET and Native app
         var isAssemblyInvokeFound = false;
 
         if (isAllNetReferencesPresent( // TODO: update [!!!]
-                references = [
-                    "System.Reflection", // System.Reflection.dll
-                    "get_EntryPoint", // MSIL: '*.Assembly::get_EntryPoint()'
-                    "Assembly", // MSIL: 'System.Reflection.Assembly' from System.Reflection.dll
-                    "Invoke", // MSIL: '*.MethodBase::Invoke(object, object[])'
-                    "Load" // MSIL: '*.Assembly::Load(uint8[])'
-                ]
-            )) {
+            references = [
+                "System.Reflection", // System.Reflection.dll
+                "get_EntryPoint", // MSIL: '*.Assembly::get_EntryPoint()'
+                "Assembly", // MSIL: 'System.Reflection.Assembly' from System.Reflection.dll
+                "Invoke", // MSIL: '*.MethodBase::Invoke(object, object[])'
+                "Load" // MSIL: '*.Assembly::Load(uint8[])'
+            ]
+        )) {
             isAssemblyInvokeFound = true;
 
             options = "Assembly invoke";
@@ -1511,7 +1514,7 @@ function scanForPackersAndCryptors_NET_and_Native() { // For .NET and Native app
                 "8A48014033D23ACA740A3ACB74068A4801" // samples by: WinZip
             ]
 
-            if (PE.isSectionNamePresent("_winzip_")) {
+            if (PE.section["_winzip_"]) {
                 isSfx = true;
             }
 
@@ -1906,7 +1909,8 @@ function scanForPackersAndCryptors_NET_and_Native() { // For .NET and Native app
 
         // Check if the signature is valid using Unicode signature mask or the original signature
         if (
-            validateGlobalUnicodeString(trigger) || validateSignature("'" + trigger + "'")
+            validateGlobalUnicodeString(trigger) ||
+            validateSignature("'" + trigger + "'")
         ) {
             log(logType.nothing, "Encoded PE detected! (with Base64)");
             isCryptor = true;
@@ -1918,6 +1922,8 @@ function scanForPackersAndCryptors_NET_and_Native() { // For .NET and Native app
 
 
 
+
+    // Check for 'MZ' signature in the overlay
 
     var isMzSignatureDetected = false;
 
@@ -1959,7 +1965,7 @@ function scanForPackersAndCryptors_NET_and_Native() { // For .NET and Native app
     var isHighEntropy = false;
 
     // Checks for high entropy (ignore overlay)
-    if (!(PE.isDll() && (PE.isSectionNamePresent(".rdata") || PE.isSectionNamePresent(".rsrc"))) && // .dll with resources
+    if (!(PE.isDll() && (PE.section[".rdata"] || PE.section[".rsrc"])) && // .dll with resources
         PE.calculateEntropy(0x00, PE.getSize() - PE.getOverlaySize()) > 7.3) {
         isHighEntropy = true;
     }
@@ -1968,6 +1974,8 @@ function scanForPackersAndCryptors_NET_and_Native() { // For .NET and Native app
 
 
 
+
+    // Check for compressed sections using entropy
 
     var isCompressedSectionPresent = false;
 
@@ -2001,6 +2009,55 @@ function scanForPackersAndCryptors_NET_and_Native() { // For .NET and Native app
     }
 
     if (recurringImports) options += (options.length != 0 ? " + " : String()) + "Recurring import names";
+
+
+
+
+    // Check for sections with full RWX permissions (Read, Write, Execute)
+
+    var isRwxSectionPresent = false;
+
+    var rwxSectionNumber = 0;
+
+    const
+        SECTION_FLAGS_EXECUTE = 0x20000000, // IMAGE_SCN_MEM_EXECUTE
+        SECTION_FLAGS_READ = 0x40000000, // IMAGE_SCN_MEM_READ
+        SECTION_FLAGS_WRITE = 0x80000000, // IMAGE_SCN_MEM_WRITE
+        SECTION_FLAGS_CODE = 0x00000020; // IMAGE_SCN_CNT_CODE
+
+    const
+        RWX_MASK = SECTION_FLAGS_EXECUTE | SECTION_FLAGS_READ | SECTION_FLAGS_WRITE,
+        RWX_CODE_MASK = RWX_MASK | SECTION_FLAGS_CODE;
+
+
+    for (var i = 0; i < PE.getNumberOfSections() && !isRwxSectionPresent; i++) {
+        var currentSectionCharacteristics = PE.section[i].Characteristics;
+
+        if ((currentSectionCharacteristics & RWX_MASK) === RWX_MASK ||
+            (currentSectionCharacteristics & RWX_CODE_MASK) === RWX_CODE_MASK) {
+            isRwxSectionPresent = true;
+            rwxSectionNumber = i;
+        }
+    }
+
+    if (isRwxSectionPresent) options += (options.length !== 0 ? " + " : String()) + "Section " + rwxSectionNumber + " (\"" + clearSectionName(PE.getSectionName(rwxSectionNumber)) + "\") has RWX";
+
+
+
+
+    // Check for IAT directory presence
+
+    var iatMissing = false;
+
+    const
+        optHeaderOffset = PE.read_int32(0x3C) + 4 + 20, // Get offset of the optional header (0x3C is the e_lfanew field)
+        iatDirOffset = optHeaderOffset + (PE.is64() ? 0x70 : 0x60) + 12 * 8; // Get offset of the IAT directory (12 is the number of IMAGE_DIRECTORY_ENTRY_ entries, 8 is the size of each entry)
+
+    if (PE.read_int32(iatDirOffset) === 0) {
+        iatMissing = true;
+    }
+
+    if (iatMissing) options += (options.length != 0 ? " + " : String()) + "IAT directory empty";
 
 
 
@@ -2095,6 +2152,8 @@ function scanForBadFileFormat_NET_and_Native() {
 
 
 
+    // EP check
+
     var isEntryPointIncorrect = false;
 
     if (!PE.isEntryPointCorrect()) {
@@ -2105,6 +2164,8 @@ function scanForBadFileFormat_NET_and_Native() {
 
 
 
+
+    // Section alignment check
 
     var isSectionAlignmentIncorrect = false;
 
@@ -2117,6 +2178,8 @@ function scanForBadFileFormat_NET_and_Native() {
 
 
 
+    // File alignment check
+
     var isFileAlignmentIncorrect = false;
 
     if (!PE.isFileAlignmentCorrect()) {
@@ -2127,6 +2190,8 @@ function scanForBadFileFormat_NET_and_Native() {
 
 
 
+
+    // Check for correct header
 
     var isHeaderIncorrect = false;
 
@@ -2139,6 +2204,8 @@ function scanForBadFileFormat_NET_and_Native() {
 
 
 
+    // Check for correct section headers
+
     var isRelocsTableIncorrect = false;
 
     if (!PE.isRelocsTableCorrect()) {
@@ -2149,6 +2216,9 @@ function scanForBadFileFormat_NET_and_Native() {
 
 
 
+
+    // Check IAT (Import Address Table)
+    // Can be destroyed when the PE dumped from memory
 
     var isImportTableIncorrect = false;
 
@@ -2173,6 +2243,8 @@ function scanForBadFileFormat_NET_and_Native() {
 
 
 
+
+    // Check for resources table
 
     var isResourcesTableIncorrect = false;
 
@@ -2281,7 +2353,7 @@ function scanForDebugData_NET_and_Native() { // For .NET and Native apps
 
     var pdbTextType = String();
 
-    if (pdbPath && !isPdbFullPathPresent) {
+    if (pdbPath && pdbPath[0] !== '.' && !isPdbFullPathPresent) {
         pdbTextType = validateSignature("00 52 53 44 53") ? "Embedded" : "Portable";
 
         log(logType.any, pdbTextType + " PDB name: \"" + pdbPath + "\"");
@@ -2292,6 +2364,8 @@ function scanForDebugData_NET_and_Native() { // For .NET and Native apps
 
 
 
+
+    // Check for Costura.Fody embedded PDB. It is a .NET tool (library) that embeds DLL builds into the main assembly.
 
     var isCosturaEmbeddedDebugData = false;
 
@@ -2515,8 +2589,8 @@ function isAllNetReferencesPresent(references) {
  */
 function findAndMark(sign, isFullName) {
     if (PE.isSignatureInSectionPresent(0,
-            ("00'" + sign + "'") + // 00'string
-            (isFullName ? "00" : String()))) { // ... '00
+        ("00'" + sign + "'") + // 00'string
+        (isFullName ? "00" : String()))) { // ... '00
         return sign;
     }
     return String();
@@ -2551,7 +2625,7 @@ function scanForObfuscations_Native() {
         var isIdioticMinGwSectionsPresent = false;
 
         if (_isResultPresent("linker", "GNU linker ld (GNU Binutils)")) {
-            if (PE.isSectionNamePresent(".build-id")) {
+            if (PE.section[".build-id"]) {
                 isIdioticMinGwSectionsPresent = true;
             } else {
                 for (var d = 1; d < 10 && !isIdioticMinGwSectionsPresent; d++) { // sections like "/5", "/2" etc
@@ -2727,9 +2801,9 @@ function scanForObfuscations_Native() {
     var exeAsDll = false;
 
     if (PE.isDll() && (
-            PE.isExportFunctionPresent("Start") ||
-            PE.isExportFunctionPresent("main") ||
-            PE.isExportFunctionPresent("_start"))) {
+        PE.isExportFunctionPresent("Start") ||
+        PE.isExportFunctionPresent("main") ||
+        PE.isExportFunctionPresent("_start"))) {
         exeAsDll = true;
     }
 
@@ -2829,7 +2903,7 @@ function scanForObfuscations_Native() {
 
     // ASM Guard fake signatures
 
-    if (PE.isSectionNamePresent(".asmg") || PE.isSectionNamePresent("ASMGUARD")) {
+    if (PE.section[".asmg"] || PE.section["ASMGUARD"]) {
         for (var f = 0; f < 3; f++)
             _removeResult("packer", ["UPX", "MPRESS", "EP:MPRESS"][f]);
     }
@@ -2877,8 +2951,8 @@ function getEpAsmPattern(onlyOpCodes, numberOf) {
         // Append either the opcode or the full instruction to the result
         result += (
             onlyOpCodes ?
-            getAsmOpCode(asmInstruction) : // "MOV"
-            asmInstruction // "MOV EAX, 4"
+                getAsmOpCode(asmInstruction) : // "MOV"
+                asmInstruction // "MOV EAX, 4"
         ) + _patternSplitter;
     }
 
@@ -2937,8 +3011,8 @@ function getInstructionsAsmPattern(instruction) {
     return _patternSplitter +
         (
             Array.isArray(instruction) ?
-            instruction.join(_patternSplitter) :
-            instruction
+                instruction.join(_patternSplitter) :
+                instruction
         ) +
         _patternSplitter;
 }
@@ -3109,7 +3183,7 @@ function validateSectionNames(dbCollection) {
             version = currentArrayPattern[1],
             sectionName = currentArrayPattern[2];
 
-        if (PE.isSectionNamePresent(sectionName)) {
+        if (PE.section[sectionName]) {
             return currentArrayPattern;
         }
     }
@@ -3130,7 +3204,8 @@ function scanForLanguages_NET_and_Native() {
         ["Java", "class"],
         ["JavaScript", "js"],
         ["Python", "pyd"],
-        ["PureBasic", "pb"]
+        ["PureBasic", "pb"],
+        ["Kotlin", "kt"]
     ];
 
 
@@ -3139,7 +3214,7 @@ function scanForLanguages_NET_and_Native() {
             langName = extdb[i][0],
             langExtName = extdb[i][1];
 
-        if (PE.isSignaturePresent(0x00, PE.getSize(), "%% %% %% %% %% %% %% %% '." + langExtName + "' 00 00")) {
+        if (PE.isSignaturePresent(0x00, PE.getSize(), "%% %% %% %% %% %% %% %% '." + langExtName + "' 00")) {
             log(logType.any, "Lines of ." + langExtName + " files (" + langName + ") detected");
             _setLangByHeur(langName);
         }
@@ -3166,80 +3241,82 @@ function scanForLanguages_NET_and_Native() {
     }
 
 
-    if (!_getNumberOfResults("protector") &&
-        !_getNumberOfResults("cryptor") &&
-        !_getNumberOfResults("~cryptor")
-    ) {
 
-        var isPpLibraryPresent = false,
-            isCLibraryPresent = false;
+    var isPpLibraryPresent = false,
+        isCLibraryPresent = false;
 
-        for (var i = 0; i < PE.getNumberOfImports(); i++) {
-            const libraryName = PE.getImportLibraryName(i).toLowerCase();
+    for (var i = 0; i < PE.getNumberOfImports(); i++) {
+        const libraryName = PE.getImportLibraryName(i).toLowerCase();
 
-            // Detect mangler
-            for (var k = 0; k < PE.getNumberOfImportThunks(i); k++) {
-                const functionName = PE.getImportFunctionName(i, k); // import, thunk
+        // Detect mangler
+        for (var k = 0; k < PE.getNumberOfImportThunks(i); k++) {
+            const functionName = PE.getImportFunctionName(i, k); // import, thunk
 
-                if (!isPpLibraryPresent && isFunctionMangled(functionName)) {
-                    log(logType.any, "Mangler detected -> \"" + libraryName + "\", at function \"" + getNameOfMangledFunction(functionName) + "\"");
+            if (!isPpLibraryPresent && isFunctionMangled(functionName)) {
+                log(logType.any, "Mangler detected -> \"" + libraryName + "\", at function \"" + getNameOfMangledFunction(functionName) + "\"");
 
 
-                    if (!_getNumberOfResults("compiler") && !_getNumberOfResults("~compiler")) {
-                        if (functionName[0] == '_') {
-                            _setResult("~compiler", "MinGW", String(), String());
-                        } else if (functionName[0] == '?') {
-                            _setResult("~compiler", "Microsoft Visual C/C++", String(), String());
-                        }
+                if (!_getNumberOfResults("compiler") && !_getNumberOfResults("~compiler")) {
+                    if (functionName[0] == '_') {
+                        _setResult("~compiler", "MinGW", String(), String());
+                    } else if (functionName[0] == '?') {
+                        _setResult("~compiler", "Microsoft Visual C/C++", String(), String());
                     }
-
-                    // if (!_isLangDetected()) 
-                    isPpLibraryPresent = true; // if language is unknown
                 }
-            }
 
-
-
-            if (libraryName.indexOf("msvcr") !== -1) {
-                log(logType.any, "C library present -> \"" + libraryName + "\"");
-                isCLibraryPresent = true;
-            }
-
-            if (
-                libraryName.indexOf("++") !== -1 ||
-                libraryName.indexOf("cpp") !== -1 ||
-                libraryName.indexOf("msvcp") !== -1
-            ) {
-                log(logType.any, "C++ library present -> \"" + libraryName + "\"");
-                isPpLibraryPresent = true;
+                // if (!_isLangDetected()) 
+                isPpLibraryPresent = true; // if language is unknown
             }
         }
 
 
 
-
-        const rdataSection = PE.section[".rdata"];
-
-        if (rdataSection) {
-            if (c_cpp && // if C/C++ detected by DIE
-                PE.isSignaturePresent(
-                    rdataSection.FileOffset,
-                    rdataSection.FileSize,
-                    generateUnicodeSignatureMask("Visual C++"))) {
-
-                log(logType.any, "Embedded Visual C++ Runtime detected.");
-                isPpLibraryPresent = true; // Visual C++ Runtime library in resources
-            }
+        if (
+            libraryName.indexOf("++") !== -1 ||
+            libraryName.indexOf("cpp") !== -1 ||
+            libraryName.indexOf("msvcp") !== -1
+        ) {
+            log(logType.any, "C++ library present -> \"" + libraryName + "\"");
+            isPpLibraryPresent = true;
+            break;
         }
 
 
-        if (isPpLibraryPresent || (c_cpp && PE.isSignaturePresent(0x00, PE.getSize() - PE.getOverlaySize(), "' C++ '"))) {
-            _setLangByHeur("C++");
-        } else if (!_isLangPresent("C++") && isCLibraryPresent && (PE.isFunctionPresent("_iob") || PE.isFunctionPresent("printf") || PE.isFunctionPresent("malloc") || PE.isFunctionPresent("memset"))) {
-            _setLangByHeur("C");
-        } else if (PE.isLibraryPresentExp(/^api-ms-win-crt*/i) || PE.section[".msvcjmc"]) {
-            _setLangByHeur("C/C++");
-        } else if (!_isLangDetected() && !_getNumberOfResults("compiler") && !PE.isNET()) {
+
+        if (libraryName.indexOf("msvcr") !== -1) {
+            log(logType.any, "C library present -> \"" + libraryName + "\"");
+            isCLibraryPresent = true;
+            break;
+        }
+    }
+
+
+
+
+    const rdataSection = PE.section[".rdata"];
+
+    if (rdataSection) {
+        if (c_cpp && // if C/C++ detected by DIE
+            PE.isSignaturePresent(
+                rdataSection.FileOffset,
+                rdataSection.FileSize,
+                generateUnicodeSignatureMask("Visual C++"))) {
+
+            log(logType.any, "Embedded Visual C++ Runtime detected.");
+            isPpLibraryPresent = true; // Visual C++ Runtime library in resources
+        }
+    }
+
+    if (isPpLibraryPresent || (c_cpp && PE.isSignaturePresent(0x00, PE.getSize() - PE.getOverlaySize(), "' C++ '"))) {
+        _setLangByHeur("C++");
+    } else if (!_isLangPresent("C++") && isCLibraryPresent && (PE.isFunctionPresent("_iob") || PE.isFunctionPresent("printf") || PE.isFunctionPresent("malloc") || PE.isFunctionPresent("memset"))) {
+        _setLangByHeur("C");
+    } else if (PE.isLibraryPresentExp(/^api-ms-win-crt*/i) || PE.section[".msvcjmc"]) {
+        _setLangByHeur("C/C++");
+    } else if (!_isLangDetected() && !_getNumberOfResults("compiler") && !PE.isNET()) {
+        if (!_getNumberOfResults("protector") &&
+            !_getNumberOfResults("cryptor") && !_getNumberOfResults("~cryptor") &&
+            !_getNumberOfResults("packer") && !_getNumberOfResults("~packer")) {
             _setLangByHeur("ASMx" + (PE.is64() ? "64" : "86"));
         }
     }
@@ -3254,6 +3331,7 @@ function scanForLanguages_NET_and_Native() {
  */
 function _setLangByHeur(languageName) {
     log(logType.any, languageName + " language detected!");
+
     _setLang(languageName, true, heurLabel);
 }
 

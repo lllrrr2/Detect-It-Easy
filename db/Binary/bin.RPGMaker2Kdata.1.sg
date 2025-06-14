@@ -2,7 +2,6 @@
 // Author:  Kaens TG@kaens
 
 init('game', '');
-includeScript("read");
 
 function detect() {
 /* beautify ignore:start */
@@ -150,7 +149,7 @@ if(!bDetected && isLMT()) {
 	sName = "RPGMaker 2000/2003 map tree data (.LMT)"; bDetected = true;
 	if(bad.length) sVersion = sVersion.appendS('malformed'+bad,'/')
 	if(X.isVerbose()) {
-		sOption('for: '+title); sOption(addEllipsis(maps.join(', '),0xC0), len+' maps:'); sOption(outSz(sz),'sz:')
+		sOption('for: '+title); sOption(addEllipsis(maps.join('\r'),0xC000), len+' maps:'); sOption(outSz(sz),'sz:')
 	}
 }
 
