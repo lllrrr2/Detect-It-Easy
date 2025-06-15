@@ -1,17 +1,12 @@
-// https://github.com/horsicq/Detect-It-Easy signature file
+// Detect It Easy: detection rule file
 // Authors: hypn0 <hypn0@mail.ru>, Kaens (TG@kaens)
 
 init("format", "");
-includeScript("read");
 
 /* beautify ignore:start */
 function detect() {
     if (Binary.compare("00010000'Standard Jet DB'00")) {
         sName = "Microsoft Access database (.MDB)";
-        bDetected = true;
-    } else if (Binary.compare("00010000'Standard ACE DB'00")) {
-        sName = "Microsoft Access database (.MDB)";
-        sVersion = "2010";
         bDetected = true;
     }
 

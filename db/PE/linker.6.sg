@@ -1,6 +1,6 @@
 // Detect It Easy: detection rule file
 
-init("linker", "unknown", PE.getCompilerVersion(), PE.getGeneralOptionsEx());
+init("linker", "Unknown");
 
 includeScript("FASM");
 includeScript("RosASM");
@@ -46,7 +46,7 @@ function detect() {
             sOptions = sOptions.append("RTM32");
         }
         bDetected = true;
-    } else if (PE.compare( /*[Tt]*/ "'his is a Windows '" /*(?:95|NT)*/ , 0x4f)) {
+    } else if (PE.compare( /*[Tt]*/ "'his is a Windows '" /*(?:95|NT)*/, 0x4f)) {
         sName = "Watcom Linker";
         sVersion += "*";
         bDetected = true;
@@ -54,13 +54,22 @@ function detect() {
         sName = "GoLink";
         bDetected = true;
     }
-    var nMajor = PE.getMajorLinkerVersion();
-    var nMinor = PE.getMinorLinkerVersion();
+
+    var nMajor = PE.getMajorLinkerVersion(),
+        nMinor = PE.getMinorLinkerVersion();
+
     if ((nMajor == 2) && (nMinor == 18)) {
         sName = "Watcom Linker";
         bDetected = true;
     } else if ((nMajor == 2) && (nMinor == 52)) {
         sName = "PowerBASIC Linker";
+        bDetected = true;
+    } else if ((nMajor == 255) && (nMinor == 255)) {
+        sName = "IBM VisualAge";
+        bDetected = true;
+    } else if ((nMajor == 7) && (nMinor == 32)) {
+        sName = "Symantec C/C++";
+        sVersion = "7.2";
         bDetected = true;
     }
     // Correct version
@@ -70,29 +79,8 @@ function detect() {
         }
     }
 
-    /* if(!bDetected&&(bShowVersion||bShowOptions))
-    {
-        if(!bShowType)
-        {
-            sName+=" "+sType;
-        }
-        bDetected=1;
-    } */
-
-    if (bFASM) {
-        // FASM doesn't have a linker.
-        bDetected = false;
-    }
-    if (bRosASM) {
-        // RosASM doesn't have a linker.
-        bDetected = false;
-    }
-    if (bSpASM) {
-        // SpASM doesn't have a linker.
-        bDetected = false;
-    }
-    if (bFPC) {
-        // Free Pascal doesn't have a linker.
+    // Doesn't have a linker.
+    if (bFASM || bRosASM || bSpASM || bFPC) {
         bDetected = false;
     }
 

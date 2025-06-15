@@ -4,16 +4,18 @@
 // Original location to look at is "'OBC Copyright MDO 1999"' since OBCEditor (https://github.com/BJNFNE/DEV7/blob/master/tools/OBCEditor/OBCEditor.py)
 // updates the copyright year from the systemtime it wouldn't match with the old 1999 hardcoded variant.
 
+// https://wiki.scummvm.org/index.php?title=Gob/DEV7_Information
 init("source", "OBC");
 
 function detect() {
-    // Check if the string "'OBC Copyright MDO'" is present in the script
-    if (Binary.compare("'OBC Copyright MDO'")) { // Use contains instead of compare
-        sVersion = "Compiled DEV7 object"; // Set version if detected
-        bDetected = true;   // Mark as detected
+    if (Binary.compare("'OBC Copyright MDO'")) {
+        sVersion = "Compiled DEV7 object";
+        bDetected = true;
     } else {
-        bDetected = false;  // Mark as not detected if the string is not found
+        bDetected = false;
     }
 
-    return result(); // Return the result of the detection
+    _setLang("Script (Syntax like Java)", bDetected);
+
+    return result();
 }

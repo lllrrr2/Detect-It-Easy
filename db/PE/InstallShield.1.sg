@@ -50,6 +50,16 @@ function detect() {
             sVersion = "18.x";
             bDetected = true;
         }
+    } else if (PE.compareEP("e8$$$$$$$$558bec83ec..a1........8365....8365....5657bf........be........3bc7")) {
+        if (PE.findSignature(PE.getOverlayOffset(), Math.min(0x10000, PE.getOverlaySize()), "'ISc('") != -1) {
+            sVersion = "25.x";
+            bDetected = true;
+        }
+    } else if (PE.compareEP("e8$$$$$$$$8b0d........5657bf........be........3bcf74..85ce75..e8........8bc8")) {
+        if (PE.compareOverlay("'ISSetupStream'")) {
+            sVersion = "29.x";
+            bDetected = true;
+        }
     } else if (PE.compareEP("e8$$$$$$$$558bec83ec..a1........8365....8365....5657bf........be........3bc774..85c674..f7")) {
         if (PE.compareOverlay("'ISSetupStream'")) {
             sVersion = "19.x";
@@ -68,23 +78,5 @@ function detect() {
         }
     }
 
-    /*else if(PE.isOverlayPresent()&&
-            (searchSection(".rsrc",0x10000)||searchSection(".data",0x1000))) // Too slow on some files :(
-    {
-        bDetected=1;
-    } */
-
     return result();
-}
-
-function searchSection(sSection, nLimit) {
-    if (PE.section[sSection]) {
-        var nOffset = PE.section[sSection].FileOffset;
-        var nSize = PE.section[sSection].FileSize;
-        if (PE.findString(nOffset, Math.min(nLimit, nSize), "InstallShield") != -1) {
-            return 1;
-        }
-    }
-
-    return 0;
 }
